@@ -1,0 +1,193 @@
+---
+title: "Homework 1"
+author: "Hithu Oleti"
+output: html_document
+date: "2025-02-04"
+---
+## Question 1:
+### Adding Header Rows to the Data
+
+```{r}
+Typical_Employee_Survey_Data <- read.csv("Typical_Employee_Survey_Data.csv")
+
+colnames(Typical_Employee_Survey_Data) <- c("Age", "Gender", "Job Satisfaction", "ImportantJobCharacteristic", "YearsWorked", "PromotionLikelihood", "WorkDecisionPower", "BudgetDecParticipation", "ProudWorker", "TurnDownJob", "RelationsScale")
+print(Typical_Employee_Survey_Data)
+
+```
+## Question 2.1: 
+### 5-point Summary and Boxplot for Age 
+
+```{r}
+fivenum(Typical_Employee_Survey_Data$Age)
+boxplot(Typical_Employee_Survey_Data$Age, main = "Distribution of Employee Ages", ylab = "Age") 
+```
+
+## Question 2.2
+### 5-point Summary and Boxplot for Years Worked 
+```{r}
+fivenum(Typical_Employee_Survey_Data$YearsWorked)
+boxplot(Typical_Employee_Survey_Data$YearsWorked, main = "Distribution of Amount of Years Employees Worked", ylab = "Years Worked")
+
+```
+
+## Question 3.1: 
+### Convert Gender to Factors 
+```{r}
+Typical_Employee_Survey_Data$Gender <- factor(Typical_Employee_Survey_Data$Gender, levels = c(1, 2),labels = c("Male", "Female"))
+
+
+print(Typical_Employee_Survey_Data$Gender)
+
+```
+## Question 3.2: 
+### Convert Job Satisfaction to Factors
+
+```{r}
+Typical_Employee_Survey_Data[,"Job Satisfaction"] <- factor(Typical_Employee_Survey_Data[,"Job Satisfaction"],levels = c(1, 2, 3, 4), labels = c("Very Satisified", "Moderately Satisfied", "A Little Dissatisfied", "Very Dissatisified"))
+
+print(Typical_Employee_Survey_Data[,"Job Satisfaction"])
+
+
+```
+## Question 3.3: 
+### Convert Important Job Characteristic to Factors
+
+```{r}
+Typical_Employee_Survey_Data$ImportantJobCharacteristic <- factor(Typical_Employee_Survey_Data$ImportantJobCharacteristic, levels = c(1, 2, 3, 4, 5),labels = c("High Income", "No Danger of Being Fired", "Flexible Hours", "Opportunities for Advancement", "Enjoying the Work" ))
+
+
+print(Typical_Employee_Survey_Data$ImportantJobCharacteristic)
+
+```
+## Question 3.4: 
+### Convert Promotion Likelihood to Factors
+
+```{r}
+Typical_Employee_Survey_Data$PromotionLikelihood <- factor(Typical_Employee_Survey_Data$PromotionLikelihood, levels = c(1, 2, 3, 4, 5),labels = c("Very Likely", "Likely", "Not Sure", "Unlikely", "Very Unlikely" ))
+
+print(Typical_Employee_Survey_Data$PromotionLikelihood)
+
+```
+
+## Question 3.5: 
+### Convert Work Decision Power to Factors
+
+```{r}
+Typical_Employee_Survey_Data$WorkDecisionPower <- factor(Typical_Employee_Survey_Data$WorkDecisionPower, levels = c(1, 2, 3, 4),labels = c("Always", "Much of the Time", "Sometimes", "Never" ))
+
+print(Typical_Employee_Survey_Data$WorkDecisionPower)
+
+```
+
+## Question 3.6: 
+### Convert Budgetary Decision Participation to Factors
+
+```{r}
+Typical_Employee_Survey_Data$BudgetDecParticipation <- factor(Typical_Employee_Survey_Data$BudgetDecParticipation, levels = c(1, 2),labels = c("Yes", "No" ))
+
+print(Typical_Employee_Survey_Data$BudgetDecParticipation)
+
+```
+## Question 3.7: 
+### Convert Proud Worker Status to Factors
+
+```{r}
+Typical_Employee_Survey_Data$ProudWorker <- factor(Typical_Employee_Survey_Data$ProudWorker, levels = c(1, 2, 3, 4),labels = c("Very Proud", "Somewhat Proud", "Indifferent", "Not At All Proud" ))
+
+print(Typical_Employee_Survey_Data$ProudWorker)
+
+```
+
+## Question 3.8: 
+### Convert Turning Down a Job for Higher Pay to Factors
+
+```{r}
+Typical_Employee_Survey_Data$TurnDownJob <- factor(Typical_Employee_Survey_Data$TurnDownJob, levels = c(1, 2, 3, 4, 5),labels = c("Very Likely", "Likely", "Not Sure", "Unlikely", "Very Unlikely" ))
+
+print(Typical_Employee_Survey_Data$TurnDownJob)
+
+```
+## Question 3.9: 
+### Convert Relations Scale to Factors
+
+```{r}
+Typical_Employee_Survey_Data$RelationsScale <- factor(Typical_Employee_Survey_Data$RelationsScale, levels = c(1, 2, 3, 4, 5),labels = c("Very Good", "Good", "So So", "Bad", "Very Bad" ))
+
+print(Typical_Employee_Survey_Data$RelationsScale)
+
+```
+## Revised Whole Table
+```{r}
+print(Typical_Employee_Survey_Data)
+
+```
+## Question 4
+### Appropriate Plots for Each Column
+
+```{r}
+par(mar=c(5,4,4,2))
+gender_counts <- table(Typical_Employee_Survey_Data$Gender)
+pie(gender_counts, main = "Gender Proportions", col = c("blue", "pink"))
+mtext("The company is majority male.", side = 1, line = 2, cex = 1.2)
+
+satisfaction_counts <- table(Typical_Employee_Survey_Data[,"Job Satisfaction"])
+barplot(satisfaction_counts, main = "Job Satisfaction", col = "Blue")
+mtext("The majority of the company feels very satisfied with their job.", side = 1, line = 3, cex = 1.2)
+
+
+par(mar = c(5, 8, 4, 8))  # Adjust left (8) and right (8) margins
+jobcharacteristic_counts <-table(Typical_Employee_Survey_Data$ImportantJobCharacteristic)
+pie(jobcharacteristic_counts, main = "Employees' Most Important Job Characteristic")
+mtext("The majority of the company feels that the most important characteristic of their job is enjoying the work.", side = 1, line = 2, cex = 0.8)
+
+
+hist(Typical_Employee_Survey_Data$YearsWorked, main = "Distribution of Years Worked", xlab = "Years Worked", col = "Red")
+mtext("Most people who work at the company have worked there for less than 10 years.", side = 1, line = 4, cex = 1.2)
+
+promotionlikelihood_counts <- table(Typical_Employee_Survey_Data$PromotionLikelihood)
+barplot(promotionlikelihood_counts, main = "The Likelihood of Promotion Amongst Employees", xlab = "Likelihood", ylab = "Frequency", col = "Yellow")
+mtext("More people believe they are very unlikely to get promoted.", side = 1, line = 4, cex = 1.2)
+
+workdecisionpower_count <- table(Typical_Employee_Survey_Data$WorkDecisionPower)
+barplot(workdecisionpower_count, main = "Does Your Job Let You Have Power Over Work Decisions", xlab = "Frequency of Power", ylab = "Frequency", col = "Blue")
+mtext("More people believe they get work decision power much of the time.", side = 1, line = 4, cex = 1.2)
+
+budgetarydecision_count <- table(Typical_Employee_Survey_Data$BudgetDecParticipation)
+pie(budgetarydecision_count, main = "Do You Participate in Budgetary Decisions?", col = c("green", "red"))
+mtext("A small majority of the company believes they do participate in budgetary decisions.", side = 1, line = 2, cex = 1)
+
+proud_count <- table(Typical_Employee_Survey_Data$ProudWorker)
+barplot(proud_count, main = "How Proud Are You To Work Here?", xlab = "Proud Level", ylab = "Frequency", col = "Red")
+mtext("Most people are somewhat proud to work at this company.", side = 1, line = 4, cex = 1.2)
+
+turndownjob_count <- table(Typical_Employee_Survey_Data$TurnDownJob)
+barplot(turndownjob_count, main = "How Likely Are You To Turn Down a Job With More Pay?", xlab = "Likelihood", ylab = "Frequency", col = "Yellow")
+mtext("Employees are unlikely to turn down another job offer with more pay.", side = 1, line = 4, cex = 1.2)
+
+
+relations_count <- table(Typical_Employee_Survey_Data$RelationsScale)
+pie(relations_count, main = "How Would You Describe Relations in Your Workplace?")
+mtext("Employees believe relations between coworkers are very good.", side = 1, line = 2, cex = 1.2)
+
+
+```
+## Question 5
+### Scatter Plots for Few Relationships
+
+```{r}
+plot(Typical_Employee_Survey_Data$Age, Typical_Employee_Survey_Data$YearsWorked, main = "Age vs. Years Worked", xlab = "Age", ylab = "Years Worked", col = "Pink") 
+mtext("The older the employee is, the more years they have worked at the company.", side = 1, line = 4, cex = 1.2)
+
+
+plot(as.numeric(Typical_Employee_Survey_Data$TurnDownJob), Typical_Employee_Survey_Data$Age, main = "Likelihood of Promotion vs. Age", xlab = "Promotion Likelihood (1 being very likely and 5 being very unlikely", ylab = "Age", col = "Purple")
+mtext("Most employees, despite their age, are unlikely to turn down a job with more pay.", side = 1, line = 4, cex = 1)
+
+
+
+plot(as.numeric(Typical_Employee_Survey_Data$WorkDecisionPower), Typical_Employee_Survey_Data$YearsWorked, main = "Power over Work Decisions vs. Years Worked", xlab = "Power over Work Decisions (1 being always and 4 being never)", ylab = "Years Worked", col = "Blue")
+mtext("There are no extremeties in this data. Employees participate in decisions sometimes/much of the time.", side = 1, line = 4, cex = 0.8)
+
+
+```
+
+
