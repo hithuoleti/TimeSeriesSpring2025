@@ -1,0 +1,140 @@
+---
+title: "Assignment_4"
+author: "Hithu Oleti"
+output: html_document
+date: "2025-02-28"
+---
+```{r}
+install.packages(c("ggplot2", "forecast", "TTR"), repos = "https://cloud.r-project.org/")
+library(ggplot2)
+library(forecast)
+library(TTR)
+```
+
+## Changing Header Names
+```{r}
+Unemployment_Rates_for_Women <- read.csv("~/Desktop/Women_Unemployment_Rates.csv")
+colnames(Unemployment_Rates_for_Women) <- c("Observation_Date", "Rate")
+print(Unemployment_Rates_for_Women)
+```
+## Preparing the Data for Time Series Modeling
+```{r}
+Unemployment_Rates_for_Women$Observation_Date <- as.Date(Unemployment_Rates_for_Women$Observation_Date, format="%Y-%m-%d")
+
+ts_data <- ts(Unemployment_Rates_for_Women$Rate, start=c(1948, 01), frequency=12)
+```
+
+
+## 1. Performing Exploratory Analysis
+### Time Series Plot
+```{r}
+autoplot(ts_data) + ggtitle("Women’s Unemployment Rate Over Time") + xlab("Year") + ylab("Unemployment Rate (%)")
+```
+
+### Running ACF Analysis
+```{r}
+acf(ts_data, main="Autocorrelation Function (ACF)")
+```
+
+### Decomposition
+```{r}
+decomp <- decompose(ts_data, type="multiplicative")
+autoplot(decomp)
+```
+
+### Moving Average Decomposition
+```{r}
+smoothed_data <- SMA(ts_data, n=12)  # 12-month moving average
+
+# Plot the original and smoothed series
+autoplot(ts_data, series="Original Data") +
+  autolayer(smoothed_data, series="12-Month Moving Average", color="blue") +
+  ggtitle("Regular Decomposition Using Moving Average") +
+  ylab("Unemployment Rate (%)") +
+  xlab("Year")
+```
+
+
+```{r}
+additive_decomp <- decompose(ts_data, type="additive")
+plot(ts_data, col="black", lwd=1, main="Additive TS Model", ylab="Unemployment Rate")
+lines(additive_decomp$trend, col="red", lwd=2)  # Trend line
+lines(additive_decomp$seasonal, col="black", lty=2)  # Dotted seasonality
+legend("topleft", legend=c("Original", "Seasonally Adjusted"), col=c("black", "red"), lty=c(1,1), lwd=c(1,2))
+
+multiplicative_decomp <- decompose(ts_data, type="multiplicative")
+plot(ts_data, col="black", lwd=1, main="Multiplicative TS Model", ylab="Unemployment Rate")
+lines(multiplicative_decomp$trend, col="red", lwd=2)  # Trend line
+lines(multiplicative_decomp$seasonal, col="black", lty=2)  # Dotted seasonality
+legend("topleft", legend=c("Original", "Seasonally Adjusted"), col=c("black", "red"), lty=c(1,1), lwd=c(1,2))
+
+# Compare seasonal components
+par(mfrow=c(1,2))  # Side-by-side plots
+
+plot(additive_decomp$seasonal, type="l", col="blue", main="Additive Seasonality", ylab="Seasonal Component")
+plot(multiplicative_decomp$seasonal, type="l", col="red", main="Multiplicative Seasonality", ylab="Seasonal Component")
+
+```
+
+
+## 2. Explanation of Model Outputs
+#### The time series plot shows cyclical unemployment trends, with clear peaks during economic downturns. The ACF plot confirms strong autocorrelation, suggesting that ARIMA-based forecasting is effective. And the moving average decomposition reveals stable seasonality.
+
+
+## 3. Plotting time series and different forecasts in one chart
+### Creating Variables
+```{r}
+plot_data <- data.frame(
+  Date = time(ts_data),
+  Original = as.numeric(ts_data),
+  Moving_Avg = as.numeric(smoothed_data),
+  Additive = as.numeric(additive_decomp$trend),
+  Multiplicative = as.numeric(multiplicative_decomp$trend)
+)
+```
+
+### Putting them in one chart
+```{r}
+ggplot(plot_data, aes(x = Date)) +
+  geom_line(aes(y = Original, color = "Original Data"), size = 0.5, alpha=0.6) +
+  geom_line(aes(y = Moving_Avg, color = "Moving Average"), size = 1, linetype="dashed") +
+  geom_line(aes(y = Additive, color = "Additive Model"), size = 1, linetype="dotdash") +
+  geom_line(aes(y = Multiplicative, color = "Multiplicative Model"), size = 1, linetype="dotted") +
+  ggtitle("Comparison of Time Series and Forecasting Models") +
+  ylab("Unemployment Rate") +
+  xlab("Year") +
+  theme_minimal() +
+  scale_color_manual(values = c("black", "blue", "red", "green")) +
+  labs(color = "Model Type")
+```
+
+## Finding the Best Model
+```{r}
+
+# Compute accuracy for the Additive Model
+additive_forecast <- additive_decomp$trend  # Extract trend as forecast
+additive_acc <- accuracy(additive_forecast, ts_data)
+
+# Compute accuracy for the Multiplicative Model
+multiplicative_forecast <- multiplicative_decomp$trend  # Extract trend as forecast
+multiplicative_acc <- accuracy(multiplicative_forecast, ts_data)
+
+# Compute accuracy for the Moving Average Model
+moving_avg_forecast <- smoothed_data
+moving_avg_acc <- accuracy(moving_avg_forecast, ts_data)
+
+# Print accuracy metrics
+print("Additive Model Accuracy:")
+print(additive_acc)
+
+print("Multiplicative Model Accuracy:")
+print(multiplicative_acc)
+
+print("Moving Average Model Accuracy:")
+print(moving_avg_acc)
+
+```
+## 4. Statement of Best Model 
+#### The best model based on the accuracy comparison would be the Additive Model. This is because while the Multiplicative Model has the same RMSE as the Additive Model, the Additive model is the best option as the seasonal component seems to remain stable over time. 
+
+
