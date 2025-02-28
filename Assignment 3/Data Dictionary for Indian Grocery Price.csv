@@ -1,9 +1,0 @@
-Variable,Variable Name,Measurement Unit,Allowed Values,Description
-Date,date,YYYY-MM,2000-02 --- 2020-01,The month in which the price of the grocery item was recorded
-Price of Chickpeas,Chickpeas,Numeric,18 - 137 ,Monthly price of chickpeas in Rupees
-Price of Mustard Oil,Oil (mustard),Numeric,0 - 115,Monthly price of mustard oil in Rupees
-Price of Potatoes,Potatoes,Numeric,4.2-30,Monthly price of potatoes in Rupees
-Price of Rice,Rice,Numeric,166 - 483,Monthly price of rice in Rupees
-Price of Sugar,Sugar,Numeric,14.5 - 1162,Monthly price of sugar in Rupees
-Price of Wheat,Wheat,Numeric,149.8 - 1297,Monthly price of wheat in Rupees
-Price of Onions,Onions,Numeric,0 - 57.1,Monthly price of onions in Rupees
