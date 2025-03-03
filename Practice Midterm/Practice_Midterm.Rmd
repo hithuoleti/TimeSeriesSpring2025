@@ -1,0 +1,166 @@
+---
+title: "Practice_Midterm"
+output: html_document
+date: "2025-03-03"
+---
+
+```{r}
+install.packages("fpp2", repos = "https://cloud.r-project.org/")
+library(fpp2)
+library(ggplot2)
+```
+```{r}
+data("arrivals")  # Load the dataset
+head(arrivals)    # View the first few rows
+summary(arrivals)
+```
+
+```{r}
+us_arrivals <- arrivals[, "US"]
+
+# Plot the time series
+autoplot(us_arrivals) +
+  ggtitle("US Arrivals to Australia") +
+  xlab("Year") +
+  ylab("Number of Arrivals") +
+  theme_minimal()
+```
+
+
+### This time series shows that there is a gradual increase of travel from the U.S. to Austrailia from around 1980 to 2000, which then remained somewhat stagnant from 2000-2010s.  
+
+```{r}
+summary(us_arrivals)
+boxplot(us_arrivals, main = "Boxplot of US to Australia travels", ylab = "Number of Arrivals", col = "blue")
+```
+
+
+## Summary Stats Observations: 
+#### The lowest number of recorded arrivals is 23.72 flights, the 1st quartile is 63.95 flights, meaning that 25% of the data falls below this value, the median is 85.88 flights, which means half of the data points are below this number and half are above. The mean is 84.85 which is the average number of arrivals, the 3rd quartile is 108.98 flights which means 75% of the data falls below this value and max is 136.09 flights which the highest recorded number of arrivals. 
+
+## Boxplot Stats Observations: 
+#### The box which IQR ranges from 63.95 - 108.98 represents the middle 50% of the data, showing a moderate spread. The whiskers extend from 23.72 (min) to 136.09 (max) covering the whole range of values. And there doesn't seem to be an apparent outliers.  
+
+
+```{r}
+us_decomp1 <- decompose(us_arrivals)
+autoplot(us_decomp1) + ggtitle("Decomposition of US Arrivals to Australia")
+```
+
+#### The time series of US arrivals to Australia is seasonal. This is because we can clearly see repeating wave-like patterns and the trend component shows a general increase over time.
+
+#### The decomposition model is additive. This is because there is a constant seasonal amplitude as it remains relatively consistent over time. There also is a smooth increasing pattern within the trend component as well. 
+
+### There appears to be seasonality! Let's find the seasonal monthly indices:
+
+```{r}
+seasonal_indices <- us_decomp1$seasonal
+monthly_indices <- tapply(seasonal_indices, cycle(seasonal_indices), mean)
+print(monthly_indices)
+```
+
+#### Since the dataset is in a quarterly basis, we have a range of 3 months. The months in which the time series value is high is the first quarter of the year, and the months in which the time series value is lowest is the second quarter of the year. The reason why the first quarter may be higher is because this is the post-holiday time of the year or winter breaks. The reason why the second quarter is the lowest is because there are fewer breaks available during April and May specifically, and late June is the beginning of summer break. 
+
+```{r}
+seasonally_adjusted <- us_arrivals - us_decomp1$seasonal
+autoplot(us_arrivals, series = "Actual Data", color = "blue") +
+  autolayer(seasonally_adjusted, series = "Seasonally Adjusted", color = "red") +
+  ggtitle("US Arrivals to Australia: Actual vs. Seasonally Adjusted") +
+  ylab("Number of Arrivals") +
+  xlab("Year") +
+  scale_color_manual(values = c("Actual Data" = "blue", "Seasonally Adjusted" = "red")) +
+  theme_minimal()
+```
+```{r}
+naive_forecast <- naive(us_arrivals, h = 12)
+autoplot(us_arrivals) +
+  autolayer(naive_forecast, series = "Naïve Forecast", PI = FALSE) +
+  ggtitle("Naïve Forecast for US Arrivals to Australia") +
+  ylab("Number of Arrivals") +
+  xlab("Year") +
+  theme_minimal()
+```
+```{r}
+naive_residuals <- residuals(naive_forecast)
+autoplot(naive_residuals) +
+  ggtitle("Residuals of Naïve Forecast") +
+  ylab("Residuals") +
+  xlab("Year") +
+  theme_minimal()
+```
+
+#### This indicates that seasonality is present and that there is a pattern present here. With residuals they would be randomly scattered around 9 but there are sort of cyclical fluctations around 0. 
+
+```{r}
+ggplot(data = data.frame(naive_residuals), aes(x = naive_residuals)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black", alpha = 0.7) +
+  ggtitle("Histogram of Residuals (Naïve Forecast)") +
+  xlab("Residuals") +
+  ylab("Frequency") +
+  theme_minimal()
+```
+
+#### This histogram indicates that the residuals are somewhat normally distributed. It is slightly skewed which shows that forecast errors are not perfectly symmetric. 
+
+```{r}
+residuals_df <- data.frame(
+  Fitted_Values = fitted(naive_forecast),
+  Residuals = naive_residuals
+)
+
+ggplot(residuals_df, aes(x = Fitted_Values, y = Residuals)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  ggtitle("Fitted Values vs. Residuals (Naïve Forecast)") +
+  xlab("Fitted Values") +
+  ylab("Residuals") +
+  theme_minimal()
+```
+
+#### This plot shows that the residuals are not perfectly random, showing that the Naive model does not fully capture trend or seasonality. We can see that maybe the variance of errors change with the fitted values as there is an uneven spread. 
+
+```{r}
+residuals_df <- data.frame(
+  Actual_Values = us_arrivals,
+  Residuals = naive_residuals
+)
+
+ggplot(residuals_df, aes(x = Actual_Values, y = Residuals)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  ggtitle("Actual Values vs. Residuals (Naïve Forecast)") +
+  xlab("Actual Values") +
+  ylab("Residuals") +
+  theme_minimal()
+```
+
+
+#### This plot shoes uneven error variance and autocorrelation which indicates that the Naive model once again does not show seasonality or trends. 
+
+```{r}
+ggAcf(naive_residuals) +
+  ggtitle("ACF of Residuals (Naïve Forecast)")
+```
+
+#### There are significant spikes at the regular intervals and exceed the blue dashed significance lines, which means that residuals are correlated at these lags. This could suggest seasonality! 
+
+```{r}
+accuracy_measures <- accuracy(naive_forecast)
+print(accuracy_measures)
+```
+
+```{r}
+forecast_table <- data.frame(naive_forecast)
+print(forecast_table)
+autoplot(naive_forecast) +
+  ggtitle("Naïve Forecast for US Arrivals to Australia") +
+  xlab("Year") +
+  ylab("Number of Arrivals") +
+  theme_minimal()
+```
+
+## How Good is the Accuracy?
+#### Overall from these results, we see that the Naive model is not the most accurate model to utilize. For example, the RMSE and MAE's results show that there are large forecast errors, the MAPE indicates that the average forecast error is 11.83% of actual values which is very high, and the MASE is greater than 1, meaning that the Naive model performs worse than a basic benchmark. 
+
+## What Does It Predeict the Time Series Value Will Be in One Year?
+#### The forecast for the next year will remain constant at the last observed value and the model assumes no trend, no growth, and no seasonal effects, leading to a flat forecast. 
