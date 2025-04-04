@@ -1,0 +1,48 @@
+---
+title: "Assignment_5"
+output: html_document
+date: "2025-04-04"
+---
+
+```{r}
+library(forecast)
+library(tseries)
+library(ggplot2)
+library(fpp2)
+```
+```{r}
+Unemployment_Rates_for_Women <- read.csv("~/Desktop/Women_Unemployment_Rates.csv")
+colnames(Unemployment_Rates_for_Women) <- c("Observation_Date", "Rate")
+print(Unemployment_Rates_for_Women)
+```
+
+## 1.Perform ARIMA and explain output
+```{r}
+unemployment_rate_ts <- ts(Unemployment_Rates_for_Women$Rate, start = c(2000, 1), frequency = 12)
+auto_fit <- auto.arima(unemployment_rate_ts, trace = TRUE, stepwise = FALSE)
+auto_fit
+plot(forecast(auto_fit,h=5,level=c(99.5)))
+```
+#### The best model that was chosen was ARIMA(3,1,2). This means that in order to predict the current value, we would need to use the 3 past values, that we should difference the data once to make it stationary, and use the past 2 forecast errors to correct the predictions. 
+
+## 2.Run Residual Analysis
+```{r}
+Acf(auto_fit$residuals)
+Box.test(residuals(auto_fit), lag=20, type="Ljung")
+plot(residuals(auto_fit))
+hist(auto_fit$residuals)
+```
+## Forecast next five periods
+```{r}
+five_periods <- forecast(auto_fit, h = 5)
+plot(five_periods)
+```
+## Show ARIMA model accuracy
+```{r}
+accuracy(auto_fit)
+```
+
+
+
+
+
